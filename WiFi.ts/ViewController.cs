@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
+
 #if DEBUG
-    using System.Diagnostics;
+using System.Diagnostics;
 #endif
 
 using AppKit;
 using Foundation;
-using CoreWlan;
 using System.Collections.Generic;
-using AsyncQueue;
+using System.Collections.Concurrent;
 
 namespace WiFi.ts
 {
@@ -26,73 +27,70 @@ namespace WiFi.ts
 
             base.ViewDidLoad();
 
-            CancellationToken cancellationToken = new CancellationToken(false);
-
             LogWTF.Editable = false;
             LogWTF.Enabled = true;
             LogWTF.Scrollable = true;
 
             LogWTF.StringValue = "Starting up!";
 
+            IWLanModel wLanModel = new WLanModel();
+
+            IWiFiDatabase database = new WiFiSqlLiteDatabase(wLanModel);
+
             try
             {
-                Task.Run(() => WiFiDatabase.PrepareDB());
+                Task.Run(() => database.PrepareDB());
             }
             catch (Exception ex)
             {
                 System.Console.WriteLine(ex.Message);
             }
+
+            int dueTime = 5000;
+
+            int period = 1000;
+
+            timer = new Timer((_Object) =>
+            {
 #if DEBUG
-            Debug.WriteLine("42");
+                Console.WriteLine("inside timer");
 #endif
-            CWInterface Interface = new CWInterface();
-#if DEBUG
-            Debug.WriteLine("46");
-#endif
+                BufferBlock<WiFiModel> networkBuffer = new BufferBlock<WiFiModel>();
 
-            try
-            {
-                CWWiFiClient client = new CWWiFiClient();
-                Interface = client.MainInterface;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+                ISourceBlock<WiFiModel> sourceBlock = networkBuffer;
 
-            AsyncQueue<WiFiModel> networkQueue = new AsyncQueue<WiFiModel>();
+                ITargetBlock<WiFiModel> targetBlock = networkBuffer;
 
-            var delay = 1000;
-
-            var interval = 5000     ;
-
-            var dt = new DateTime();
-
-            ViewController.timer = new Timer((obj) =>
-            {
-                if (!cancellationToken.IsCancellationRequested)
+                Task.Run(async () =>
                 {
-                    NSError nSError = new NSError();
-                    CWNetwork[] cWNetworks = Interface.ScanForNetworksWithName(null, true, out nSError);
-                    if (nSError == default(NSError))
+                    while (await sourceBlock.OutputAvailableAsync())
                     {
+                        WiFiModel temp = sourceBlock.Receive();
 
+                        await database.Enqueue(temp);
                     }
-                    dt = DateTime.Now;
-                    if (cWNetworks.Length > 0)
-                        foreach (CWNetwork network in cWNetworks)
-                        {
-                            networkQueue.Enqueue(WiFiDatabase.WiFiModelFactory(network, dt));
-                        }
-                }
-                else
+                });
+
+                Task.Run(() =>
                 {
-                    timer.Dispose();
-                }
-            }, new object(), delay, interval);
+                    ConcurrentQueue<WiFiModel> targetQueue = database.wLanModel.Networks;
 
+                    while (targetQueue.Count > 0)
+                    {
+                        WiFiModel fiModel = new WiFiModel();
+                        if (targetQueue.TryDequeue(out fiModel))
+                        {
+                            targetBlock.Post(fiModel);
+                        }
+                    }
 
+                    targetBlock.Complete();
+                });
+            }, new object()
+                              , dueTime
+                              , period);
 
+            Task.Run(() => database.CloseDB());
         }
 
         public override NSObject RepresentedObject

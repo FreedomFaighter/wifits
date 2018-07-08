@@ -28,6 +28,7 @@
     <UseSGen>true</UseSGen>
     <UseRefCounting>true</UseRefCounting>
     <PlatformTarget>x86</PlatformTarget>
+    <AOTMode>None</AOTMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -43,6 +44,7 @@
     <UseRefCounting>true</UseRefCounting>
     <LinkMode>SdkOnly</LinkMode>
     <PlatformTarget>x86</PlatformTarget>
+    <AOTMode>None</AOTMode>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -50,6 +52,9 @@
     <Reference Include="Xamarin.Mac" />
     <Reference Include="Mono.Data.Sqlite" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Threading.Tasks.Dataflow">
+      <HintPath>..\packages\System.Threading.Tasks.Dataflow.4.5.24\lib\portable-net45+win8+wpa81\System.Threading.Tasks.Dataflow.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json" />
@@ -67,10 +72,13 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="Classes\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
     <None Include="Entitlements.plist" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
@@ -80,6 +88,12 @@
       <DependentUpon>ViewController.cs</DependentUpon>
     </Compile>
     <Compile Include="WiFiDatabase.cs" />
+    <Compile Include="Interfaces\IWiFiModel.cs" />
+    <Compile Include="Classes\WiFiModel.cs" />
+    <Compile Include="Interfaces\IWLanModel.cs" />
+    <Compile Include="Classes\WLanModel.cs" />
+    <Compile Include="WiFiModelFactory.cs" />
+    <Compile Include="Interfaces\IWiFiDatabase.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
@@ -87,11 +101,6 @@
   <ItemGroup>
     <BundleResource Include="Resources\WiFi.ts.entitlements" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AsyncQueue\AsyncQueue.csproj">
-      <Project>{BDB2A636-248C-4751-A021-46664714C233}</Project>
-      <Name>AsyncQueue</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
+  <Import Project="..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
 </Project>

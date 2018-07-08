@@ -18,7 +18,7 @@ namespace WiFi.ts
 
         public override void WillTerminate(NSNotification notification)
         {
-            Task.Run(() => WiFiDatabase.CloseDB());
+            
         }
     }
 }

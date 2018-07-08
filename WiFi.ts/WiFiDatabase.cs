@@ -3,169 +3,129 @@ using Mono.Data.Sqlite;
 using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using AsyncQueue;
-using System.Threading;
-using CoreWlan;
+using System.Collections.Concurrent;
+using System.Data;
 
 namespace WiFi.ts
 {
-    internal class WiFiModel
+    public class WiFiSqlLiteDatabase : IWiFiDatabase
     {
-        private Int64? id;
-        private String ssid;
-        private String bssid;
-        private Int32 channel;
-        private DateTime dateTimeLogged;
+        private SqliteConnection _SingleConnection;
 
-        public Int64? ID
+        private ConcurrentQueue<WiFiModel> _WiFiQueue = new ConcurrentQueue<WiFiModel>();
+
+        private bool _isProcessing = false;
+
+        private IWLanModel _IWLanModel;
+
+        public IWLanModel wLanModel
         {
             get
             {
-                return this.id;
-            }
-            set
-            {
-                this.id = value;
+                return this._IWLanModel;
             }
         }
 
-        public String SSID
+        public WiFiSqlLiteDatabase(IWLanModel wLanModel)
         {
-            get { return this.ssid; }
-            set { this.ssid = value; }
+            this._IWLanModel = wLanModel;
         }
 
-        public String BSSID
+        public async Task<bool> PrepareDB()
         {
-            get { return this.bssid; }
-            set { this.bssid = value; }
-        }
-
-        public Int32 Channel
-        {
-            get { return this.channel; }
-            set { this.channel = value; }
-        }
-
-        public DateTime DateTimeLogged {
-            get { return this.dateTimeLogged; }
-            set { this.dateTimeLogged = value; }
-        }
-
-        public WiFiModel(Int64? ID, String SSID, String BSSID, Int32 Channel, DateTime DateTimeLogged)
-        {
-            this.id = ID;
-            this.ssid = SSID;
-            this.bssid = BSSID;
-            this.channel = Channel;
-            this.dateTimeLogged = DateTimeLogged;
-        }
-    }
-
-    static public class WiFiDatabase
-    {
-        static internal WiFiModel WiFiModelFactory(CWNetwork network, DateTime dateTimeLogged)
-        {
-            WiFiModel wife = new WiFiModel(
-                null,
-                Convert.ToString(network.Ssid),
-                Convert.ToString(network.Bssid),
-                Convert.ToInt32(network.WlanChannel.ChannelNumber),
-                dateTimeLogged
-            );
-
-            return wife; 
-        }
-
-        static private SqliteConnection SingleConnection;
-
-        static public CancellationToken cancellationToken;
-
-        static public async Task<bool> PrepareDB()
-        {
+#if DEBUG
+            Console.WriteLine("Inside PrepareDB()");
+#endif
             try
             {
                 FileStream fileStream;
-                string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DateTime.Now.Ticks.ToString() + "-WiFi.ts.db3");
+                String dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "WiFi.ts.db3;");
                 if (!File.Exists(dbPath))
                 {
-                    fileStream = File.Open(dbPath, FileMode.OpenOrCreate);
+                    fileStream = File.Open(dbPath, FileMode.Create);
                     fileStream.Close();
                 }
 
-                //make SingleConnection
-                if (WiFiDatabase.SingleConnection == null)
-                    WiFiDatabase.SingleConnection = new SqliteConnection("Data Source=" + dbPath);
-                await Task.Run(() => WiFiDatabase.SingleConnection.Open());
-                SqliteCommand sqliteCommandCreateWiFiTable = new SqliteCommand(@"CREATE TABLE IF NOT EXISTS WiFi(WiFiID INT PRIMARY KEY AUTOINCREMENT, SSID TEXT, BSSIDID TEXT, RSSI INT, NOISEMEASUREMENT INT, CHANNEL INT, DATETIMELOGGED DATETIME)", WiFiDatabase.SingleConnection);
+                if (this._SingleConnection == null)
+                {
+                    this._SingleConnection = new SqliteConnection("Data Source=" + dbPath + ";DbLinqProvider = sqlite");
+                }
+                await Task.Run(() => this._SingleConnection.Open());
+                SqliteCommand sqliteCommandCreateWiFiTable = new SqliteCommand(@"CREATE TABLE IF NOT EXISTS WiFi(WiFiID INTEGER PRIMARY KEY AUTOINCREMENT, SSID TEXT, BSSID TEXT, CHANNEL INT, DATETIMERECORDED DATETIME)", this._SingleConnection);
                 await sqliteCommandCreateWiFiTable.ExecuteNonQueryAsync();
-                SqliteCommand sqliteCommandCreateBSSIDIndex = new SqliteCommand(@"CREATE UNIQUE INDEX IF NOT EXISTS IDX_BSSID_WiFi ON WiFi(BSSID)");
+                SqliteCommand sqliteCommandCreateBSSIDIndex = new SqliteCommand(@"CREATE UNIQUE INDEX IF NOT EXISTS IDX_BSSID_WiFi ON WiFi(BSSID)", this._SingleConnection);
                 await sqliteCommandCreateBSSIDIndex.ExecuteNonQueryAsync();
                 return true;
             }
             catch (Exception ex)
             {
+#if DEBUG
+                Console.WriteLine(ex.Message);
+#endif
                 throw ex;
             }
         }
 
-        static public async Task CloseDB()
+        public async Task CloseDB()
         {
-            await Task.Run(() => WiFiDatabase.SingleConnection.Close());
+            await Task.Run(() => this._SingleConnection.Close());
         }
 
-        static internal AsyncQueue<WiFiModel> wiFiQueue = new AsyncQueue<WiFiModel>();
-
-        static bool isProcessing = false;
-
-        static internal async Task Enqueue(WiFiModel wiFiModel)
+        public async Task Enqueue(WiFiModel wiFiModel)
         {
-            wiFiQueue.Enqueue(wiFiModel);
+#if DEBUG
+            Console.WriteLine("INSIDE Enqueue.");
+#endif
+            _WiFiQueue.Enqueue(wiFiModel);
 
-            if (!isProcessing)
+            if (!this._isProcessing)
             {
-                isProcessing = true;
+                this._isProcessing = true;
                 await StartProcessingDBQueue();
             }
         }
 
-        private static async Task StartProcessingDBQueue()
+        private async Task StartProcessingDBQueue()
         {
-            while (wiFiQueue.HasPromises)
+            while (!this._WiFiQueue.IsEmpty)
             {
-                isProcessing = true;
-                var first = wiFiQueue.DequeueAsync(ref cancellationToken).Result;
-                //process the current task
-                await Task.Run(() =>
-                {
-                    int reconnectAttempts = 0;
-                    String command = string.Format("INSERT INTO WiFi(SSID, BSSID, CHANNEL, DATETIMELOGGED) VALUES (?, ?, ?, ?, ?)");
-                    if (WiFiDatabase.SingleConnection != null)
-                    {
-                        SqliteCommand sqliteCommandInsert = new SqliteCommand(command.ToString(), WiFiDatabase.SingleConnection);
-                        sqliteCommandInsert.Parameters.Add(first.SSID);
-                        sqliteCommandInsert.Parameters.Add(first.BSSID);
-                        sqliteCommandInsert.Parameters.Add(first.Channel);
-                        sqliteCommandInsert.Parameters.Add(first.DateTimeLogged);
+                WiFiModel fiModel = new WiFiModel();
 
-                        sqliteCommandInsert.ExecuteNonQueryAsync();
-                    }
-                    else
+                try
+                {
+                    if (this._WiFiQueue.TryDequeue(out fiModel))
                     {
-                    reconnectAttempt:
-                        reconnectAttempts++;
-                        if (!WiFiDatabase.PrepareDB().Result && reconnectAttempts < 7)
-                        {
-                            goto reconnectAttempt;
-                        }
-                        else
-                        {
-                            throw new Exception("Error reconnecting to DB");
-                        }
+#if DEBUG
+                        Console.WriteLine("Inside Start If");
+#endif
+                        SqliteCommand sqliteCommand = this._SingleConnection.CreateCommand();
+                        sqliteCommand.CommandText = @"INSERT INTO WiFi (SSID, BSSID, CHANNEL, DATETIMERECORDED) VALUES (@SSID, @BSSID, @CHANNEL, @DATETIMERECORDED)";
+                        sqliteCommand.CommandType = System.Data.CommandType.Text;
+                        sqliteCommand.Parameters.Add(new SqliteParameter("@SSID", SqlDbType.Text) { Value = fiModel.SSID });
+                        sqliteCommand.Parameters.Add(new SqliteParameter("@BSSID", SqlDbType.Text) { Value = fiModel.BSSID });
+                        sqliteCommand.Parameters.Add(new SqliteParameter("@CHANNEL", SqlDbType.Int) { Value = fiModel.Channel });
+                        sqliteCommand.Parameters.Add(new SqliteParameter("@DATETIMERECORDED", SqlDbType.DateTime, 10)
+                        { Value = this.DateTimeSQLite(fiModel.DateTimeRecorded) });
+
+                        int rows = await sqliteCommand.ExecuteNonQueryAsync();
+#if DEBUG
+                        Console.WriteLine(rows);
+#endif
                     }
-                });
+                }
+                catch (Exception ex)
+                {
+#if DEBUG
+                    Console.WriteLine(ex.Message);
+#endif
+                }
             }
-            isProcessing = false;
+            this._isProcessing = false;
+        }
+        private string DateTimeSQLite(DateTime datetime)
+        {
+            string dateTimeFormat = "{0}-{1}-{2} {3}:{4}:{5}.{6}";
+            return string.Format(dateTimeFormat, datetime.Year, datetime.Month, datetime.Day, datetime.Hour, datetime.Minute, datetime.Second, datetime.Millisecond);
         }
     }
 }
