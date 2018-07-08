@@ -79,7 +79,6 @@
     <Compile Include="ViewController.designer.cs">
       <DependentUpon>ViewController.cs</DependentUpon>
     </Compile>
-    <Compile Include="WiFiScanner.cs" />
     <Compile Include="WiFiDatabase.cs" />
   </ItemGroup>
   <ItemGroup>

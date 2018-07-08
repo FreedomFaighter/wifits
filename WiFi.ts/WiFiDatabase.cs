@@ -5,40 +5,76 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using AsyncQueue;
 using System.Threading;
+using CoreWlan;
 
 namespace WiFi.ts
 {
+    internal class WiFiModel
+    {
+        private Int64? id;
+        private String ssid;
+        private String bssid;
+        private Int32 channel;
+        private DateTime dateTimeLogged;
+
+        public Int64? ID
+        {
+            get
+            {
+                return this.id;
+            }
+            set
+            {
+                this.id = value;
+            }
+        }
+
+        public String SSID
+        {
+            get { return this.ssid; }
+            set { this.ssid = value; }
+        }
+
+        public String BSSID
+        {
+            get { return this.bssid; }
+            set { this.bssid = value; }
+        }
+
+        public Int32 Channel
+        {
+            get { return this.channel; }
+            set { this.channel = value; }
+        }
+
+        public DateTime DateTimeLogged {
+            get { return this.dateTimeLogged; }
+            set { this.dateTimeLogged = value; }
+        }
+
+        public WiFiModel(Int64? ID, String SSID, String BSSID, Int32 Channel, DateTime DateTimeLogged)
+        {
+            this.id = ID;
+            this.ssid = SSID;
+            this.bssid = BSSID;
+            this.channel = Channel;
+            this.dateTimeLogged = DateTimeLogged;
+        }
+    }
+
     static public class WiFiDatabase
     {
-        public class WiFiModel
+        static internal WiFiModel WiFiModelFactory(CWNetwork network, DateTime dateTimeLogged)
         {
-            public Int64? ID { get; set; }
-            public String SSID { get; set; }
-            public String BSSID { get; set; }
-            public int RSSI { get; set; }
-            public int noiseMeasurement { get; set; }
-            public int channel { get; set; }
-            public DateTime dateTimeLogged { get; set; }
-        }
+            WiFiModel wife = new WiFiModel(
+                null,
+                Convert.ToString(network.Ssid),
+                Convert.ToString(network.Bssid),
+                Convert.ToInt32(network.WlanChannel.ChannelNumber),
+                dateTimeLogged
+            );
 
-        static internal WiFiModel WiFiModelFactory(String SSID, String BSSID, int RSSI, int noiseMeasurement, int channel, DateTime dateTimeLogged)
-        {
-            return new WiFiModel()
-            {
-                SSID = SSID,
-                BSSID = BSSID,
-                RSSI = RSSI,
-                noiseMeasurement = noiseMeasurement,
-                channel = channel,
-                dateTimeLogged = dateTimeLogged
-            };
-        }
-
-        static public String Log;
-
-        static public void AttachLog(ref string log)
-        {
-            WiFiDatabase.Log = log;
+            return wife; 
         }
 
         static private SqliteConnection SingleConnection;
@@ -50,10 +86,9 @@ namespace WiFi.ts
             try
             {
                 FileStream fileStream;
-                string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DateTime.Now.Ticks.ToString() + "WiFi.ts.db3");
+                string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DateTime.Now.Ticks.ToString() + "-WiFi.ts.db3");
                 if (!File.Exists(dbPath))
                 {
-                    Log += "dbFile doesn't exist";
                     fileStream = File.Open(dbPath, FileMode.OpenOrCreate);
                     fileStream.Close();
                 }
@@ -79,11 +114,11 @@ namespace WiFi.ts
             await Task.Run(() => WiFiDatabase.SingleConnection.Close());
         }
 
-        static AsyncQueue<WiFiModel> wiFiQueue = new AsyncQueue<WiFiModel>();
+        static internal AsyncQueue<WiFiModel> wiFiQueue = new AsyncQueue<WiFiModel>();
 
         static bool isProcessing = false;
 
-        static public async Task Enqueue(WiFiModel wiFiModel)
+        static internal async Task Enqueue(WiFiModel wiFiModel)
         {
             wiFiQueue.Enqueue(wiFiModel);
 
@@ -104,16 +139,14 @@ namespace WiFi.ts
                 await Task.Run(() =>
                 {
                     int reconnectAttempts = 0;
-                    String command = string.Format("INSERT INTO WiFi(SSID, BSSID, RSSI, NOISEMEASUREMENT, CHANNEL, DATETIMELOGGED) VALUES (?, ?, ?, ?, ?, ?)");
+                    String command = string.Format("INSERT INTO WiFi(SSID, BSSID, CHANNEL, DATETIMELOGGED) VALUES (?, ?, ?, ?, ?)");
                     if (WiFiDatabase.SingleConnection != null)
                     {
                         SqliteCommand sqliteCommandInsert = new SqliteCommand(command.ToString(), WiFiDatabase.SingleConnection);
                         sqliteCommandInsert.Parameters.Add(first.SSID);
                         sqliteCommandInsert.Parameters.Add(first.BSSID);
-                        sqliteCommandInsert.Parameters.Add(first.RSSI);
-                        sqliteCommandInsert.Parameters.Add(first.noiseMeasurement);
-                        sqliteCommandInsert.Parameters.Add(first.channel);
-                        sqliteCommandInsert.Parameters.Add(first.dateTimeLogged);
+                        sqliteCommandInsert.Parameters.Add(first.Channel);
+                        sqliteCommandInsert.Parameters.Add(first.DateTimeLogged);
 
                         sqliteCommandInsert.ExecuteNonQueryAsync();
                     }

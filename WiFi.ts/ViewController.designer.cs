@@ -1,4 +1,4 @@
-﻿// WARNING
+// WARNING
 //
 // This file has been generated automatically by Visual Studio to store outlets and
 // actions made in the UI designer. If it is removed, they will be lost.
@@ -9,18 +9,18 @@ using System.CodeDom.Compiler;
 
 namespace WiFi.ts
 {
-    [Register ("ViewController")]
-    partial class ViewController
-    {
-        [Outlet]
-        AppKit.NSTextFieldCell LogWTF { get; set; }
-        
-        void ReleaseDesignerOutlets ()
-        {
-            if (LogWTF != null) {
-                LogWTF.Dispose ();
-                LogWTF = null;
-            }
-        }
-    }
+	[Register ("ViewController")]
+	partial class ViewController
+	{
+		[Outlet]
+		AppKit.NSTextFieldCell LogWTF { get; set; }
+		
+		void ReleaseDesignerOutlets ()
+		{
+			if (LogWTF != null) {
+				LogWTF.Dispose ();
+				LogWTF = null;
+			}
+		}
+	}
 }

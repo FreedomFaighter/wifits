@@ -7,23 +7,27 @@ using System.Threading.Tasks;
 
 using AppKit;
 using Foundation;
-using CoreData;
 using CoreWlan;
-using CoreLocation;
 using System.Collections.Generic;
+using AsyncQueue;
 
 namespace WiFi.ts
 {
     public partial class ViewController : NSViewController
     {
+        static Timer timer;
+
         public ViewController(IntPtr handle) : base(handle)
         {
         }
 
         public override void ViewDidLoad()
         {
-            
+
             base.ViewDidLoad();
+
+            CancellationToken cancellationToken = new CancellationToken(false);
+
             LogWTF.Editable = false;
             LogWTF.Enabled = true;
             LogWTF.Scrollable = true;
@@ -34,7 +38,7 @@ namespace WiFi.ts
             {
                 Task.Run(() => WiFiDatabase.PrepareDB());
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 System.Console.WriteLine(ex.Message);
             }
@@ -45,32 +49,50 @@ namespace WiFi.ts
 #if DEBUG
             Debug.WriteLine("46");
 #endif
-            try {
+
+            try
+            {
                 CWWiFiClient client = new CWWiFiClient();
                 Interface = client.MainInterface;
             }
-            catch(Exception ex) {
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.Message);
             }
-            Timer timer = new Timer(HandleTimerCallback;)
-            while (true)
+
+            AsyncQueue<WiFiModel> networkQueue = new AsyncQueue<WiFiModel>();
+
+            var delay = 1000;
+
+            var interval = 5000     ;
+
+            var dt = new DateTime();
+
+            ViewController.timer = new Timer((obj) =>
             {
-                Task.Run(async () =>
+                if (!cancellationToken.IsCancellationRequested)
                 {
-                    NSError nSError;
-                    Queue<CWNetwork> networkQueue = new Queue<CWNetwork>(Interface.ScanForNetworksWithName(null, true, out nSError));
-                    while (networkQueue.Count > 0)
+                    NSError nSError = new NSError();
+                    CWNetwork[] cWNetworks = Interface.ScanForNetworksWithName(null, true, out nSError);
+                    if (nSError == default(NSError))
                     {
-                        var firstNetwork = networkQueue.Dequeue();
-                        WiFiDatabase.WiFiModel model = WiFiDatabase.WiFiModelFactory(firstNetwork.Ssid, firstNetwork.Bssid
-                                                                           , Convert.ToInt32(firstNetwork.Rssi)
-                                                                           , Convert.ToInt32(firstNetwork.NoiseMeasurement)
-                                                                           , Convert.ToInt32(firstNetwork.WlanChannel)
-                                                                                     , DateTime.Now);
-                        await WiFiDatabase.Enqueue(model);
+
                     }
-                });
-            }
+                    dt = DateTime.Now;
+                    if (cWNetworks.Length > 0)
+                        foreach (CWNetwork network in cWNetworks)
+                        {
+                            networkQueue.Enqueue(WiFiDatabase.WiFiModelFactory(network, dt));
+                        }
+                }
+                else
+                {
+                    timer.Dispose();
+                }
+            }, new object(), delay, interval);
+
+
+
         }
 
         public override NSObject RepresentedObject
