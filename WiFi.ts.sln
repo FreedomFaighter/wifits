@@ -1,0 +1,23 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WiFi.ts", "WiFi.ts\WiFi.ts.csproj", "{52CD185A-E77A-4A76-A6A0-8267E1DE92DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncQueue", "AsyncQueue\AsyncQueue.csproj", "{BDB2A636-248C-4751-A021-46664714C233}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{52CD185A-E77A-4A76-A6A0-8267E1DE92DC}.Debug|x86.ActiveCfg = Debug|x86
+		{52CD185A-E77A-4A76-A6A0-8267E1DE92DC}.Debug|x86.Build.0 = Debug|x86
+		{52CD185A-E77A-4A76-A6A0-8267E1DE92DC}.Release|x86.ActiveCfg = Release|x86
+		{52CD185A-E77A-4A76-A6A0-8267E1DE92DC}.Release|x86.Build.0 = Release|x86
+		{BDB2A636-248C-4751-A021-46664714C233}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BDB2A636-248C-4751-A021-46664714C233}.Debug|x86.Build.0 = Debug|Any CPU
+		{BDB2A636-248C-4751-A021-46664714C233}.Release|x86.ActiveCfg = Release|Any CPU
+		{BDB2A636-248C-4751-A021-46664714C233}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
