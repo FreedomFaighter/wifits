@@ -8,6 +8,7 @@ namespace WiFi.ts
         private String ssid;
         private String bssid;
         private Int32 channel;
+        private Int32 rssi;
         private DateTime dateTimeRecorded;
 
         public Int64? ID
@@ -40,18 +41,25 @@ namespace WiFi.ts
             set { this.channel = value; }
         }
 
+        public Int32 Rssi
+        {
+            get { return this.Rssi; }
+            set { this.Rssi = value; }
+        }
+
         public DateTime DateTimeRecorded
         {
             get { return this.dateTimeRecorded; }
             set { this.dateTimeRecorded = value; }
         }
 
-        public WiFiModel(Int64? ID, String SSID, String BSSID, Int32 Channel, DateTime DateTimeRecorded)
+        public WiFiModel(Int64? ID, String SSID, String BSSID, Int32 Channel, Int32 Rssi, DateTime DateTimeRecorded)
         {
             this.id = ID;
             this.ssid = SSID;
             this.bssid = BSSID;
             this.channel = Channel;
+            this.rssi = Rssi;
             this.dateTimeRecorded = DateTimeRecorded;
         }
 

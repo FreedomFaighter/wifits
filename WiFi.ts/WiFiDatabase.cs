@@ -39,7 +39,7 @@ namespace WiFi.ts
             try
             {
                 FileStream fileStream;
-                String dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "WiFi.ts.db3;");
+                String dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "WiFi.ts.db3");
                 if (!File.Exists(dbPath))
                 {
                     fileStream = File.Open(dbPath, FileMode.Create);
@@ -51,10 +51,10 @@ namespace WiFi.ts
                     this._SingleConnection = new SqliteConnection("Data Source=" + dbPath + ";DbLinqProvider = sqlite");
                 }
                 await Task.Run(() => this._SingleConnection.Open());
-                SqliteCommand sqliteCommandCreateWiFiTable = new SqliteCommand(@"CREATE TABLE IF NOT EXISTS WiFi(WiFiID INTEGER PRIMARY KEY AUTOINCREMENT, SSID TEXT, BSSID TEXT, CHANNEL INT, DATETIMERECORDED DATETIME)", this._SingleConnection);
+                SqliteCommand sqliteCommandCreateWiFiTable = new SqliteCommand(@"CREATE TABLE IF NOT EXISTS WiFi(WiFiID INTEGER PRIMARY KEY AUTOINCREMENT, SSID TEXT, BSSID TEXT, CHANNEL INT, RSSI INT, DATETIMERECORDED DATETIME)", this._SingleConnection);
                 await sqliteCommandCreateWiFiTable.ExecuteNonQueryAsync();
-                SqliteCommand sqliteCommandCreateBSSIDIndex = new SqliteCommand(@"CREATE UNIQUE INDEX IF NOT EXISTS IDX_BSSID_WiFi ON WiFi(BSSID)", this._SingleConnection);
-                await sqliteCommandCreateBSSIDIndex.ExecuteNonQueryAsync();
+                //SqliteCommand sqliteCommandCreateBSSIDIndex = new SqliteCommand(@"CREATE UNIQUE INDEX IF NOT EXISTS IDX_BSSID_WiFi ON WiFi(BSSID)", this._SingleConnection);
+                //await sqliteCommandCreateBSSIDIndex.ExecuteNonQueryAsync();
                 return true;
             }
             catch (Exception ex)
@@ -99,12 +99,13 @@ namespace WiFi.ts
                         Console.WriteLine("Inside Start If");
 #endif
                         SqliteCommand sqliteCommand = this._SingleConnection.CreateCommand();
-                        sqliteCommand.CommandText = @"INSERT INTO WiFi (SSID, BSSID, CHANNEL, DATETIMERECORDED) VALUES (@SSID, @BSSID, @CHANNEL, @DATETIMERECORDED)";
+                        sqliteCommand.CommandText = @"INSERT INTO WiFi (SSID, BSSID, CHANNEL, RSSI, DATETIMERECORDED) VALUES (@SSID, @BSSID, @CHANNEL, @RSSI, DATETIME(@DATETIMERECORDED))";
                         sqliteCommand.CommandType = System.Data.CommandType.Text;
-                        sqliteCommand.Parameters.Add(new SqliteParameter("@SSID", SqlDbType.Text) { Value = fiModel.SSID });
-                        sqliteCommand.Parameters.Add(new SqliteParameter("@BSSID", SqlDbType.Text) { Value = fiModel.BSSID });
-                        sqliteCommand.Parameters.Add(new SqliteParameter("@CHANNEL", SqlDbType.Int) { Value = fiModel.Channel });
-                        sqliteCommand.Parameters.Add(new SqliteParameter("@DATETIMERECORDED", SqlDbType.DateTime, 10)
+                        sqliteCommand.Parameters.Add(new SqliteParameter("@SSID", DbType.String) { Value = fiModel.SSID });
+                        sqliteCommand.Parameters.Add(new SqliteParameter("@BSSID", DbType.String) { Value = fiModel.BSSID });
+                        sqliteCommand.Parameters.Add(new SqliteParameter("@CHANNEL", DbType.Int32) { Value = fiModel.Channel });
+                        sqliteCommand.Parameters.Add(new SqliteParameter("@RSSI", DbType.Int32) { Value = fiModel.Rssi });
+                        sqliteCommand.Parameters.Add(new SqliteParameter("@DATETIMERECORDED", DbType.String)
                         { Value = this.DateTimeSQLite(fiModel.DateTimeRecorded) });
 
                         int rows = await sqliteCommand.ExecuteNonQueryAsync();

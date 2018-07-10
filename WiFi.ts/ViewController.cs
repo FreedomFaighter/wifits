@@ -9,7 +9,6 @@ using System.Diagnostics;
 
 using AppKit;
 using Foundation;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
 
 namespace WiFi.ts
@@ -89,6 +88,7 @@ namespace WiFi.ts
             }, new object()
                               , dueTime
                               , period);
+
 
             Task.Run(() => database.CloseDB());
         }
