@@ -48,48 +48,70 @@ namespace WiFi.ts
             int dueTime = Infinite;
 
             int period = Infinite;
-
-            timer = new Timer((_Object) =>
+            try
             {
+                timer = new Timer((_Object) =>
+                {
 #if DEBUG
                 Console.WriteLine("inside timer");
 #endif
-                BufferBlock<WiFiModel> networkBuffer = new BufferBlock<WiFiModel>();
+                    BufferBlock<WiFiModel> networkBuffer = new BufferBlock<WiFiModel>();
 
-                ISourceBlock<WiFiModel> sourceBlock = networkBuffer;
+                    ISourceBlock<WiFiModel> sourceBlock = networkBuffer;
 
-                ITargetBlock<WiFiModel> targetBlock = networkBuffer;
+                    ITargetBlock<WiFiModel> targetBlock = networkBuffer;
 
-                Task.Run(async () =>
-                {
-                    while (await sourceBlock.OutputAvailableAsync())
+                    Task.Run(async () =>
                     {
-                        WiFiModel temp = sourceBlock.Receive();
-
-                        await database.Enqueue(temp);
-                    }
-                });
-                //Generates a queue of the networks current broadcasting and recognized by the API
-                //due to the looping nature of the recording this information a Queue is formed to not congest the attempt to record this information in a database
-                Task.Run(() =>
-                {
-                    ConcurrentQueue<WiFiModel> targetQueue = database.wLanModel.Networks;
-
-                    while (targetQueue.Count > 0)
-                    {
-                        WiFiModel fiModel = new WiFiModel();
-                        if (targetQueue.TryDequeue(out fiModel))
+                        while (await sourceBlock.OutputAvailableAsync())
                         {
-                            targetBlock.Post(fiModel);
+                            WiFiModel temp = sourceBlock.Receive();
+
+                            await database.Enqueue(temp);
                         }
-                    }
+                    });
+                    //Generates a queue of the networks current broadcasting and recognized by the API
+                    //due to the looping nature of the recording this information a Queue is formed to not congest the attempt to record this information in a database
+                    Task.Run(() =>
+                    {
+                        ConcurrentQueue<WiFiModel> targetQueue = database.wLanModel.Networks;
 
-                    targetBlock.Complete();
-                });
-            }, new object()
-                              , dueTime
-                              , period);
+                        while (targetQueue.Count > 0)
+                        {
+                            WiFiModel fiModel = new WiFiModel();
+                            if (targetQueue.TryDequeue(out fiModel))
+                            {
+                                targetBlock.Post(fiModel);
+                            }
+                        }
 
+                        targetBlock.Complete();
+                    });
+                }, new object()
+                                  , dueTime
+                                  , period);
+            }
+            catch (ArgumentOutOfRangeException aoore)
+            {
+#if DEBUG
+                Console.WriteLine(aaore.Message);
+#endif
+                System.Environment.Exit(1);
+            }
+            catch (NotSupportedException nse)
+            {
+#if DEBUG
+                Console.WriteLine(nse.Message);
+#endif
+                System.Environment.Exit(2);
+            }
+            catch (Exception ex)
+            {
+#if DEBUG
+                Console.WriteLine(ex.Message);
+#endif
+                System.Environment.Exit(3);
+            }
 
             Task.Run(() => database.CloseDB());
         }
