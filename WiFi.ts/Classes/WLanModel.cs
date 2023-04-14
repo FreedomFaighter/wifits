@@ -36,7 +36,7 @@ namespace WiFi.ts
                 DateTime now = DateTime.Now;
                 this._WiFis = new ConcurrentQueue<WiFiModel>();
 
-                foreach (var network in networks)
+                foreach (CWNetwork network in networks)
                 {
                     this._WiFis.Enqueue(WiFiModelFactory.CreateWiFiModel(network, now));
                 }
