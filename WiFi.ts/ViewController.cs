@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -69,7 +69,8 @@ namespace WiFi.ts
                         await database.Enqueue(temp);
                     }
                 });
-
+                #Generates a queue of the networks current broadcasting and recognized by the API
+                #due to the looping nature of the recording this information a Queue is formed to not congest the attempt to record this information in a database
                 Task.Run(() =>
                 {
                     ConcurrentQueue<WiFiModel> targetQueue = database.wLanModel.Networks;
