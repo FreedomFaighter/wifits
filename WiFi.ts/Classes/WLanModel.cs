@@ -3,6 +3,7 @@ using CoreWlan;
 using Foundation;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections;
 
 namespace WiFi.ts
 {
@@ -31,7 +32,7 @@ namespace WiFi.ts
             get {
                 NSError error = new NSError();
 
-                var networks = this._interface.ScanForNetworksWithName(null, true, out error);
+                List<CWNetwork> networks = this._interface.ScanForNetworksWithName(null, true, out error);
                 DateTime now = DateTime.Now;
                 this._WiFis = new ConcurrentQueue<WiFiModel>();
 
