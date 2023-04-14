@@ -52,9 +52,6 @@ namespace WiFi.ts
             {
                 timer = new Timer((_Object) =>
                 {
-#if DEBUG
-                Console.WriteLine("inside timer");
-#endif
                     BufferBlock<WiFiModel> networkBuffer = new BufferBlock<WiFiModel>();
 
                     ISourceBlock<WiFiModel> sourceBlock = networkBuffer;
