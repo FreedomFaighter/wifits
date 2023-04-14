@@ -87,8 +87,8 @@ namespace WiFi.ts
                     targetBlock.Complete();
                 });
             }, new object()
-                              , dueTime
-                              , period);
+                              , Infinite
+                              , Infinite);
 
 
             Task.Run(() => database.CloseDB());
