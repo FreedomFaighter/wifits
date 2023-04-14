@@ -48,7 +48,7 @@ namespace WiFi.ts
 
                 if (this._SingleConnection == null)
                 {
-                    this._SingleConnection = new SqliteConnection("Data Source=" + dbPath + ";DbLinqProvider = sqlite");
+                    this._SingleConnection = new SqliteConnection($"Data Source={dbPath};DbLinqProvider = sqlite");
                 }
                 await Task.Run(() => this._SingleConnection.Open());
                 SqliteCommand sqliteCommandCreateWiFiTable = new SqliteCommand(@"CREATE TABLE IF NOT EXISTS WiFi(WiFiID INTEGER PRIMARY KEY AUTOINCREMENT, SSID TEXT, BSSID TEXT, CHANNEL INT, RSSI INT, DATETIMERECORDED DATETIME)", this._SingleConnection);
