@@ -45,9 +45,9 @@ namespace WiFi.ts
                 System.Console.WriteLine(ex.Message);
             }
 
-            int dueTime = 5000;
+            int dueTime = Infinite;
 
-            int period = 1000;
+            int period = Infinite;
 
             timer = new Timer((_Object) =>
             {
@@ -87,8 +87,8 @@ namespace WiFi.ts
                     targetBlock.Complete();
                 });
             }, new object()
-                              , Infinite
-                              , Infinite);
+                              , dueTime
+                              , period);
 
 
             Task.Run(() => database.CloseDB());
