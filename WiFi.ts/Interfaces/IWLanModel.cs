@@ -2,7 +2,7 @@
 
 namespace WiFi.ts
 {
-    #interface to setup a concurrent model of the network recording in the case that more then one thread is accessing the information during recording
+    //interface to setup a concurrent model of the network recording in the case that more then one thread is accessing the information during recording
     public interface IWLanModel
     {
         ConcurrentQueue<WiFiModel> Networks { get; }
