@@ -39,7 +39,7 @@ namespace WiFi.ts
             try
             {
                 FileStream fileStream;
-                String dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), $"WiFi.ts.{System.DateTime.Now}.db3");
+                String dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), $"WiFi.ts.{System.DateTime.Now.ToString()}.db3");
                 if (!File.Exists(dbPath))
                 {
                     fileStream = File.Open(dbPath, FileMode.Create);
