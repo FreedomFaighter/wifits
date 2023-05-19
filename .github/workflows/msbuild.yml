@@ -25,8 +25,8 @@ jobs:
 #          echo "MD_APPLE_SDK_ROOT=$XCODE_ROOT" >> $GITHUB_ENV
 #          sudo xcode-select -s $XCODE_ROOT
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.1
+#      - name: Setup MSBuild
+#        uses: microsoft/setup-msbuild@v1.1
 
       - name: Install dependencies
         run: nuget restore WiFi.ts.sln
