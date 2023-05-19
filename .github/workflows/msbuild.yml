@@ -12,18 +12,18 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macOS-12
     steps:
       - uses: actions/checkout@v3
       - name: Set default Xamarin SDK versions
         run: |
           $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.12 --mac=8.12
     
-      - name: Set default Xcode 13.0.0
-        run: |
-          XCODE_ROOT=/Applications/Xcode_13.0.0.app
-          echo "MD_APPLE_SDK_ROOT=$XCODE_ROOT" >> $GITHUB_ENV
-          sudo xcode-select -s $XCODE_ROOT
+#      - name: Set default Xcode 13.0.0
+#        run: |
+#          XCODE_ROOT=/Applications/Xcode_13.0.0.app
+#          echo "MD_APPLE_SDK_ROOT=$XCODE_ROOT" >> $GITHUB_ENV
+#          sudo xcode-select -s $XCODE_ROOT
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
@@ -32,4 +32,4 @@ jobs:
         run: nuget restore WiFi.ts.sln
 
       - name: Build
-        run: msbuild WiFi.ts.sln /p:Configuration=Release /t:Rebuild
+        run: msbuild WiFi.ts.sln /p:Configuration=Release /t:Build
