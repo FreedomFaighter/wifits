@@ -73,6 +73,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Assets.xcassets\" />
     <Folder Include="Resources\" />
     <Folder Include="Interfaces\" />
     <Folder Include="Classes\" />
