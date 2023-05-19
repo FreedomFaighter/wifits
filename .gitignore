@@ -1,3 +1,7 @@
+WiFi.ts/obj/
+WiFi.ts/bin/
+packages/
+.DS_Store
 .vs/
 *.dll
 bin/
