@@ -32,4 +32,4 @@ jobs:
         run: nuget restore WiFi.ts.sln
 
       - name: Build
-        run: msbuild WiFi.ts.sln /p:Configuration=Release /t:Build
+        run: msbuild WiFi.ts.sln /p:Configuration=Release /t:Build /p:CreatePackage=false
