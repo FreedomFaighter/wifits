@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Set default Xamarin SDK versions
         run: |
-          $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.12 --mac=11.7
+          $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.12 --mac=8.12
     
       - name: Set default Xcode 12.3
         run: |
