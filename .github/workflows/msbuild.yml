@@ -13,6 +13,8 @@ on:
 jobs:
   build:
     runs-on: macOS-12
+    env: 
+      SOLUTION_FILE: WiFi.ts.sln
     steps:
       - uses: actions/checkout@v3
       - name: Set default Xamarin SDK versions
@@ -28,8 +30,8 @@ jobs:
 #      - name: Setup MSBuild
 #        uses: microsoft/setup-msbuild@v1.1
 
-      - name: Install dependencies
-        run: nuget restore WiFi.ts.sln
+      - name: Install dependencies for WiFi.ts
+        run: nuget restore ${SOLUTION_FILE}
 
-      - name: Build
-        run: msbuild WiFi.ts.sln /p:Configuration=Release /t:Build /p:CreatePackage=false
+      - name: Build WiFi.ts
+        run: msbuild ${SOLUTION_FILE} /p:Configuration=Release /t:Build /p:CreatePackage=false
