@@ -26,7 +26,7 @@ namespace WiFi.ts
 
             base.ViewDidLoad();
 
-            LogWTF.InvokeOnMainThread(
+            LogWTF.BeginInvokeOnMainThread(
                 new Action(
                     () => {
                         LogWTF.Editable = false;
