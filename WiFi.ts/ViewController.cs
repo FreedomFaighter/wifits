@@ -26,11 +26,16 @@ namespace WiFi.ts
 
             base.ViewDidLoad();
 
-            LogWTF.Editable = false;
-            LogWTF.Enabled = true;
-            LogWTF.Scrollable = true;
-
-            LogWTF.StringValue = "Starting up!";
+            LogWTF.InvokeOnMainThread(
+                new Action(
+                    () => {
+                        LogWTF.Editable = false;
+                        LogWTF.Enabled = true;
+                        LogWTF.Scrollable = true;
+                        LogWTF.StringValue = "Starting up!";
+                    }
+                )
+            );
 
             IWLanModel wLanModel = new WLanModel();
 
