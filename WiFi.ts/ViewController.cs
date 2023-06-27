@@ -55,14 +55,14 @@ namespace WiFi.ts
             int period = -1;
             try
             {
+                BufferBlock<WiFiModel> networkBuffer = new BufferBlock<WiFiModel>();
+
+                ISourceBlock<WiFiModel> sourceBlock = networkBuffer;
+
+                ITargetBlock<WiFiModel> targetBlock = networkBuffer;
+                
                 this.timer = new Timer((_Object) =>
                 {
-                    BufferBlock<WiFiModel> networkBuffer = new BufferBlock<WiFiModel>();
-
-                    ISourceBlock<WiFiModel> sourceBlock = networkBuffer;
-
-                    ITargetBlock<WiFiModel> targetBlock = networkBuffer;
-
                     Task.Run(async () =>
                     {
                         while (await sourceBlock.OutputAvailableAsync())
