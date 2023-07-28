@@ -1,0 +1,41 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: WiFi.ts
+
+on:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: macOS-12
+    env: 
+      SOLUTION_FILE: WiFi.ts.sln
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set default Xamarin SDK versions
+        run: |
+          $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.12 --mac=8.12
+    
+#      - name: Set default Xcode 13.0.0
+#        run: |
+#          XCODE_ROOT=/Applications/Xcode_13.0.0.app
+#          echo "MD_APPLE_SDK_ROOT=$XCODE_ROOT" >> $GITHUB_ENV
+#          sudo xcode-select -s $XCODE_ROOT
+
+#      - name: Setup MSBuild
+#        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Install dependencies for WiFi.ts
+        run: nuget restore ${SOLUTION_FILE}
+
+      - name: Build WiFi.ts
+        run: msbuild ${SOLUTION_FILE} /p:Configuration=Release /t:Build /p:CreatePackage=false
