@@ -3,12 +3,10 @@
 
 name: WiFi.ts
 
-on:
+on: 
   push:
-    branches:
-      - '*'
-    tags-ignore:
-      - '*'
+    branches-ignore:
+    - 'master'
   pull_request:
     branches: [ master ]
 
@@ -16,7 +14,7 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: macOS-12
+    runs-on: macOS-latest
     env: 
       SOLUTION_FILE: WiFi.ts.sln
     steps:
