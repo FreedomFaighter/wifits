@@ -50,9 +50,9 @@ namespace WiFi.ts
                 System.Console.WriteLine(ex.Message);
             }
 
-            int dueTime = -1;
+            int dueTime = 5;
 
-            int period = -1;
+            int period = 1;
             try
             {
                 BufferBlock<WiFiModel> networkBuffer = new BufferBlock<WiFiModel>();
