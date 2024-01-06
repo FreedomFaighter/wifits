@@ -1,6 +1,6 @@
 ﻿using AppKit;
 
-namespace WiFi.ts
+namespace WiFits
 {
     static class MainClass
     {

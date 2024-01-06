@@ -1,7 +1,7 @@
 ﻿using System;
 using CoreWlan;
 
-namespace WiFi.ts
+namespace WiFits
 {
     static public class WiFiModelFactory
     {

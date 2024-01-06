@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>WiFi.ts</string>
+	<string>WiFits</string>
 	<key>CFBundleIdentifier</key>
 	<string>pro.freemania.WiFi-ts</string>
 	<key>CFBundleShortVersionString</key>

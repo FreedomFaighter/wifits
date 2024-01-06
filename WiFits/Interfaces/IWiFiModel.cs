@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WiFi.ts
+namespace WiFits
 {
     public interface IWiFiModel
     {

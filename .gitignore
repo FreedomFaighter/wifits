@@ -1,8 +1,9 @@
-WiFi.ts/obj/
-WiFi.ts/bin/
+WiFits/obj/
+WiFits/bin/
 packages/
 .DS_Store
 .vs/
 *.dll
 bin/
 obj/
+/UpgradeLog.htm
