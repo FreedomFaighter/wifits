@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 using System.Data.SQLite;
 using System.Data;
 
-namespace WiFi.ts
+namespace WiFits
 {
     public class WiFiSqlLiteDatabase : IWiFiDatabase
     {
@@ -38,7 +38,7 @@ namespace WiFi.ts
             try
             {
                 FileStream fileStream;
-                String dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "WiFi.ts.db3");
+                String dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "WiFits.db3");
                 if (!File.Exists(dbPath))
                 {
                     fileStream = File.Open(dbPath, FileMode.Create);

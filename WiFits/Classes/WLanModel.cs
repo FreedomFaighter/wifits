@@ -4,7 +4,7 @@ using Foundation;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 
-namespace WiFi.ts
+namespace WiFits
 {
     public class WLanModel : IWLanModel
     {

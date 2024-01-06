@@ -11,7 +11,7 @@ using System.Diagnostics;
 using AppKit;
 using Foundation;
 
-namespace WiFi.ts
+namespace WiFits
 {
     public partial class ViewController : NSViewController
     {

@@ -2,7 +2,7 @@
 using Foundation;
 using System.Threading.Tasks;
 
-namespace WiFi.ts
+namespace WiFits
 {
     [Register("AppDelegate")]
     public class AppDelegate : NSApplicationDelegate

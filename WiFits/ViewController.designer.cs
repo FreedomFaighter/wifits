@@ -7,7 +7,7 @@
 using Foundation;
 using System.CodeDom.Compiler;
 
-namespace WiFi.ts
+namespace WiFits
 {
 	[Register ("ViewController")]
 	partial class ViewController
